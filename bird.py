@@ -7,7 +7,7 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
-FRAMES_PER_ACITON = 5
+FRAMES_PER_ACITON = 14
 FRAMES_PER_TIME = ACTION_PER_TIME * FRAMES_PER_ACITON
 
 from pico2d import get_time, load_image, load_font, clamp,  SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
@@ -107,7 +107,17 @@ class Run:
 
     @staticmethod
     def do(bird):
-        bird.frame = (bird.frame + FRAMES_PER_TIME * game_framework.frame_time) % 4
+        bird.frame = (bird.frame + FRAMES_PER_TIME * game_framework.frame_time) % 14
+        if int(bird.frame) < 6:
+            bird.height = 362
+            bird.cnt = int(bird.frame) % 5
+        elif int(bird.frame) < 11:
+            bird.height = 161
+            bird.cnt = int(bird.frame) % 5
+        elif int(bird.frame) >= 11:
+            bird.height = 0
+            bird.cnt = int(bird.frame) % 5
+
         bird.x += bird.dir * RUN_SPEED_PPS * game_framework.frame_time
         if(bird.x > 1500):
             bird.dir = -1
@@ -116,9 +126,9 @@ class Run:
     @staticmethod
     def draw(bird):
         if(bird.dir > 0):
-            bird.image.clip_draw(int(bird.frame) * 182 + 34, 161, 180, 150, bird.x, bird.y, 100, 100)
+            bird.image.clip_draw(bird.cnt * 182 + 10, bird.height, 180, 150, bird.x, bird.y, 100, 100)
         else:
-            bird.image.clip_composite_draw(int(bird.frame) * 182 + 34, 161, 180, 150, 0, 'h', bird.x, bird.y , 100, 100)
+            bird.image.clip_composite_draw(bird.cnt * 182 + 10, bird.height, 180, 150, 0, 'h', bird.x, bird.y, 100, 100)
 
 
 
@@ -161,11 +171,12 @@ class Bird:
         self.action = 0
         self.face_dir = 1
         self.dir = 1
+        self.cnt = -1
         self.image = load_image('bird_animation.png')
         self.state_machine = StateMachine(self)
         self.state_machine.start()
         self.font = load_font('ENCR10B.TTF', 16)
-
+        self.height = 0
 
     def update(self):
         self.state_machine.update()
